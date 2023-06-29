@@ -1,0 +1,8 @@
+elasticsearchHosts: "https://elasticsearch-master:9200"
+elasticsearchUsername: ${ELASTICSEARCH_USERNAME}
+elasticsearchPassword: ${ELASTICSEARCH_PASSWORD}
+
+# Reference the Elasticsearch credentials secret
+envFrom:
+  - secretRef:
+      name: elasticsearch-master-credentials

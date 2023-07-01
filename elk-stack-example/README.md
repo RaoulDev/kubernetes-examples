@@ -1,23 +1,60 @@
-## Logging Stack
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+    </li>
+    <li>
+      <a href="#deploy-elastic">Deploy elastic</a>
+    </li>
+    <li>
+      <a href="#deploy-filebeat">Deploy filebeat</a>
+    </li>
+    <li>
+      <a href="#deploy-kibana">Deploy kibana</a>
+    </li>
+  </ol>
+</details>
+
+<!-- ABOUT THE PROJECT -->
+## About the project
+Here I want to deploy a minimalistic stable version of elk running on 
+minikube. These are the components I want to deploy:
+###  Logging Stack
 - Kibana is then used to visualize the data stored in Elasticsearch. It provides a user-friendly interface to interact with the Elasticsearch data and includes features for data exploration, visualization, and dashboarding.
 - Elasticsearch would then index this data. Once indexed in Elasticsearch, the data is searchable and available for analysis
-- Filebeat would be installed on the servers you wish to monitor. It would tail the log files, line by line (as they grow), and ship the data to Logstash.
+- Filebeat would be installed on the servers you wish to monitor. It would tail the log files, line by line (as they grow), and ship the data to Elasticsearch.
 
-## Install
-1. Add helm repository:
+<!-- GETTING STARTED -->
+## Prerequisites
+1. Minikube
+To run the elk stack stable on the single node minikube cluster, I decided to go with 4G ram for minikube.
+This is how to configure it, alternatively you add the memory and cpu args to the minikube start command 
+```bash
+minikube config set memory 4096
+minikube config set cpus 2
+minikube start
+minikube config view
+```
+2. Add helm repository
 ```bash
 helm repo add elastic https://helm.elastic.co
 helm repo update
 ```
-
-2. Download charts to see default values
+3. Download charts (you can use --version to specify a specific version, I am using 8.3.1)
+This is nice to see the default values and example configurations which can be found in the examples folder 
 ```bash
 helm pull elastic/elasticsearch --untar
 helm pull elastic/kibana --untar
 helm pull elastic/filebeat --untar
 ```
 
-3. Deploy elastic search:
+<!-- DEPLOY ELASTIC -->
+## Deploy elastic search:
 ```bash
 # deploy elasticsearch
 helm install elasticsearch elastic/elasticsearch -f ./values-elastic.yaml --namespace logging --create-namespace

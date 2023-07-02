@@ -78,18 +78,6 @@ kubectl -n logging exec elasticsearch-0 -- curl -XGET 'http://localhost:9200/_ca
 #show current data of index in elasticsearch
 kubectl -n logging exec elasticsearch-0 -- curl -XGET 'http://localhost:9200/{$INDEX}/_search?pretty'
 ```
-<!-- DEPLOY KIBANA -->
-## Deploy kibana
-5. Deploy Kibana and config user/pwd for elastic in helm charts
-```bash
-helm install kibana elastic/kibana -f ./values-kibana.yaml --namespace logging
-```
-6. Check Kibana access to elasticsearch
-```bash
-kubectl -n logging port-forward pod/kibana-kibana-8647c65456-hb8k4 5601:5601
-curl -k -u elastic:${ELASTICSEARCH_PWD} https://elasticsearch-master:9200/_cluster/health?pretty=true
-```
-
 <!-- DEPLOY FILEBEAT -->
 ## Deploy filebeat
 7. Deploy filebeat
@@ -135,4 +123,19 @@ the config is described here:
         #so this ca is used also for filebeat
         ssl.certificate_authorities:
         - /usr/share/filebeat/config/certs/ca.crt
+```
+
+<!-- DEPLOY KIBANA -->
+## Deploy kibana
+5. Deploy Kibana and config user/pwd for elastic in helm charts
+```bash
+helm install kibana elastic/kibana -f ./values-kibana.yaml --namespace logging
+```
+6. Check Kibana
+```bash
+#This is to access the kibana ui by browser http://localhost:5601/
+kubectl -n logging port-forward pod/kibana-kibana-8647c65456-hb8k4 5601
+#To check if kibana has access to elastic connect to kibana pod and execute
+kubectl exec -it kibana-kibana-8647c65456-hb8k4 -- sh
+curl -k -u elastic:${ELASTICSEARCH_PWD} https://elasticsearch-master:9200/_cluster/health?pretty=true
 ```

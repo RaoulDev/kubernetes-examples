@@ -80,7 +80,7 @@ kubectl -n logging exec elasticsearch-0 -- curl -XGET 'http://localhost:9200/{$I
 ```
 <!-- DEPLOY FILEBEAT -->
 ## Deploy filebeat
-7. Deploy filebeat
+5. Deploy filebeat
 ```bash
 helm install filebeat elastic/filebeat -f ./values-filebeat.yaml --namespace logging
 # watch all containers come up
@@ -127,11 +127,11 @@ the config is described here:
 
 <!-- DEPLOY KIBANA -->
 ## Deploy kibana
-5. Deploy Kibana and config user/pwd for elastic in helm charts
+6. Deploy Kibana and config user/pwd for elastic in helm charts
 ```bash
 helm install kibana elastic/kibana -f ./values-kibana.yaml --namespace logging
 ```
-6. Check Kibana
+7. Check Kibana
 ```bash
 #This is to access the kibana ui by browser http://localhost:5601/
 kubectl -n logging port-forward pod/kibana-kibana-8647c65456-hb8k4 5601

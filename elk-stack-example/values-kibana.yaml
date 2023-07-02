@@ -1,8 +1,10 @@
+#set the elasticsearch host and username and password for accessing it
 elasticsearchHosts: "https://elasticsearch-master:9200"
 elasticsearchUsername: ${ELASTICSEARCH_USERNAME}
 elasticsearchPassword: ${ELASTICSEARCH_PASSWORD}
 
-# Reference the Elasticsearch credentials secret
+# Reference the Elasticsearch credentials secret containing user and password
+# which are automatically mapped to the upper env variables
 envFrom:
   - secretRef:
       name: elasticsearch-master-credentials

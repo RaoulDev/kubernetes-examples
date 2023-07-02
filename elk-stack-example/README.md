@@ -78,7 +78,8 @@ kubectl -n logging exec elasticsearch-0 -- curl -XGET 'http://localhost:9200/_ca
 #show current data of index in elasticsearch
 kubectl -n logging exec elasticsearch-0 -- curl -XGET 'http://localhost:9200/{$INDEX}/_search?pretty'
 ```
-
+<!-- DEPLOY KIBANA -->
+## Deploy kibana
 5. Deploy Kibana and config user/pwd for elastic in helm charts
 ```bash
 helm install kibana elastic/kibana -f ./values-kibana.yaml --namespace logging
@@ -89,9 +90,49 @@ kubectl -n logging port-forward pod/kibana-kibana-8647c65456-hb8k4 5601:5601
 curl -k -u elastic:${ELASTICSEARCH_PWD} https://elasticsearch-master:9200/_cluster/health?pretty=true
 ```
 
+<!-- DEPLOY FILEBEAT -->
+## Deploy filebeat
 7. Deploy filebeat
 ```bash
 helm install filebeat elastic/filebeat -f ./values-filebeat.yaml --namespace logging
 # watch all containers come up
 kubectl get pods --namespace=logging -l app=filebeat-filebeat -w
+```
+### Filebeat configuration
+The values-xxx.yaml files are documented with comments, except the inline filebeat yaml,
+the config is described here:
+```yaml
+     #This section describes from where Filebeat should read log data.
+     #In this case, it reads logs from all containers in the system,
+     #which are written to log files in the /var/log/containers/ directory.
+     filebeat.inputs:
+      - type: container
+        paths:
+          - /var/log/containers/*.log
+        #This section describes how Filebeat should process the log data before forwarding it.
+        #The add_kubernetes_metadata processor enriches each log event with 
+        #metadata from Kubernetes (like the name of the pod that generated the log).
+        processors:
+        #This is the setting for the add_kubernetes_metadata processor.
+        #The host field is used to specify the node name. 
+        #In this case, it is set to the environment variable ${NODE_NAME},
+        #which should be set to the name of the node that the Filebeat instance is running on.
+        #This is necessary for the add_kubernetes_metadata processor to know which node's metadata to fetch.
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            matchers:
+            - logs_path:
+                logs_path: "/var/log/containers/"
+     
+     #Here is the elasticsearch configuration for filebeat to connect to elasticsearch
+     output.elasticsearch:
+        host: '${NODE_NAME}'
+        hosts: 'elasticsearch-master:9200'
+        username: '${ELASTICSEARCH_USERNAME}'
+        password: '${ELASTICSEARCH_PASSWORD}'
+        protocol: https
+        #there is ca already installed by elasticsearch, which is mounted by the deamonset,
+        #so this ca is used also for filebeat
+        ssl.certificate_authorities:
+        - /usr/share/filebeat/config/certs/ca.crt
 ```

@@ -1,5 +1,6 @@
 daemonset:
   # Reference the Elasticsearch credentials secret
+  # because filebeat need the credentials for accessing elasticsearch
   envFrom:
     - secretRef:
         name: elasticsearch-master-credentials
@@ -15,7 +16,6 @@ daemonset:
             matchers:
             - logs_path:
                 logs_path: "/var/log/containers/"
-
       output.elasticsearch:
         host: '${NODE_NAME}'
         hosts: 'elasticsearch-master:9200'
@@ -30,5 +30,6 @@ daemonset:
       path: /usr/share/filebeat/config/certs
   resources:
     limits:
-      # Should avoid OOM (Error 137) when running goss tests into the pod
+      #This section describes the resource limits for the Filebeat container.
+      #In this case, it's limiting the memory usage of the container to 300Mi to avoid out-of-memory errors.
       memory: "300Mi"

@@ -63,7 +63,10 @@ helm upgrade elasticsearch elastic/elasticsearch -f ./values-elastic.yaml --name
 ```
 4. Create a temporal pod in namespace and port forward to access elasticsearch service
    and check if is running using the credentials from secrets\elasticsearch-master-credentials
+The default elastic user is: elastic and the default password here is generated in the secret: elasticsearch-master-credentials
 ```bash
+#here is how you get your elastic pwd
+kubectl -n logging get secret elasticsearch-master-credentials -o jsonpath='{.data.password}' | base64 --decode
 #if this works we know that the elasticsearch service an be reached in the namespaces by the url
 kubectl -n logging run my-shell --rm -i --tty --image alpine/curl -- /bin/sh
 curl -k -u elastic:${ELASTICSEARCH_PWD} https://elasticsearch-master:9200/_cluster/health?pretty=true

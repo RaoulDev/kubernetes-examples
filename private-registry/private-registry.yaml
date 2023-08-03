@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: private-reg
+  labels:
+    name: private-reg
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: registry
+  name: registry
+  namespace: private-reg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: registry
+  template:
+    metadata:
+      labels:
+        run: registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              value: "/certs/tls.crt"
+            - name: REGISTRY_HTTP_TLS_KEY
+              value: "/certs/tls.key"
+          volumeMounts:
+            - name: registry-certs
+              mountPath: "/certs"
+              readOnly: true
+            - name: registry-data
+              mountPath: /var/lib/registry
+              subPath: registry
+      volumes:
+        - name: registry-certs
+          secret:
+            secretName: registry-cert
+        - name: registry-data
+          persistentVolumeClaim:
+            claimName: registry-data-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registry-data-pvc
+  namespace: private-reg
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: private-reg-pv-volume  # Sets PV's name
+  namespace: private-reg
+  labels:
+    app: private-reg
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi # Sets PV Volume
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-service
+  namespace: private-reg
+spec:
+  type: NodePort
+  selector:
+    run: registry
+  ports:
+    - name: registry-tcp
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30888

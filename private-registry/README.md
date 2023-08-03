@@ -151,7 +151,7 @@ kubectl -n private-reg get secret registry-cert -o=jsonpath="{.data.tls\.crt}" |
 This will use the /mnt directory to save the images in the private registry.
 Here we will now tag and push a image for our private registry.
 Important to notice is the persistent volume host path should be existent on minikube
-that's why the mount directory is used!
+that's why the mount (/mnt) directory is used!
 ```bash
 kubectl apply -f private-registry.yaml
 # pull image
